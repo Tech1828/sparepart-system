@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambah Sparepart</title>
+  <style>
+    :root {
+      --primary: #05276A;
+      --bg: #f2f2f2;
+      --white: #fff;
+      --border: #ddd;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--white);
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--primary);
+    }
+
+    .btn {
+      background: #999;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn:hover {
+      background: #777;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+      color: var(--primary);
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin: 8px 0 15px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    #submitBtn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #submitBtn:hover {
+      background-color: #07338b;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .success { color: green; }
+    .error { color: red; }
+
+    @media (max-width: 500px) {
+      h2 { font-size: 18px; }
+      input, #submitBtn { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔐 Sekat jika belum login -->
+  <script>
+    const role = localStorage.getItem("role");
+    if (!role) {
+      alert("❌ Anda belum login.");
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <div class="container">
+    <div class="topbar">
+      <h2>➕ Tambah Sparepart</h2>
+      <button class="btn" onclick="logout()">Log Keluar</button>
+    </div>
+
+    <label for="name">Nama Sparepart</label>
+    <input type="text" id="name" placeholder="Contoh: LCD iPhone 11">
+
+    <label for="price">Harga (RM)</label>
+    <input type="number" id="price" placeholder="Contoh: 120" step="0.01" min="0">
+
+    <label for="stock">Stok Awal</label>
+    <input type="number" id="stock" placeholder="Contoh: 10" min="0">
+
+    <button id="submitBtn" onclick="tambahSparepart()">✔️ Tambah Sparepart</button>
+
+    <div id="message"></div>
+    <div style="text-align:center; margin-top: 15px;">
+      <button class="btn" onclick="window.location.href='dashboard.html'">⬅️ Kembali</button>
+    </div>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    async function tambahSparepart() {
+      const name = document.getElementById("name").value.trim();
+      const price = parseFloat(document.getElementById("price").value);
+      const stock = parseInt(document.getElementById("stock").value) || 0;
+      const msg = document.getElementById("message");
+
+      if (!name || isNaN(price)) {
+        msg.textContent = "❗ Sila isi nama dan harga yang sah.";
+        msg.className = "error";
+        return;
+      }
+
+      const response = await fetch('/spareparts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, price, stock })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        msg.textContent = "✅ Sparepart berjaya ditambah!";
+        msg.className = "success";
+        document.getElementById("name").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("stock").value = "";
+      } else {
+        msg.textContent = "❌ " + (result.message || "Gagal tambah sparepart.");
+        msg.className = "error";
+      }
+    }
+  </script>
+</body>
+</html>

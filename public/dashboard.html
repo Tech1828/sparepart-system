@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Pengguna</title>
+
+  <!-- ✅ PWA support (Add to Home Screen) -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="HIA Sparepart">
+  <link rel="apple-touch-icon" href="logo.png">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background: #05276A;
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      color: white;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .logo {
+      max-width: 90px;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin: 10px 0 5px;
+    }
+
+    .welcome {
+      font-size: 18px;
+      margin-bottom: 20px;
+      font-weight: normal;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      background-color: white;
+      color: #05276A;
+      font-weight: bold;
+      border: none;
+      font-size: 15px;
+      border-radius: 6px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #e4e4e4;
+    }
+
+    #logout {
+      background-color: #999;
+      color: white;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <img src="logo.png" class="logo" alt="Logo HIA" />
+    <h2>📋 Dashboard <span id="roleLabel"></span></h2>
+    <div class="welcome" id="welcomeText">Selamat datang!</div>
+
+    <!-- Admin Menu -->
+    <div id="adminMenu" style="display:none">
+      <button class="btn" onclick="location.href='admin.html'">📊 Semakan Penggunaan</button>
+      <button class="btn" onclick="location.href='stock.html'">📦 Lihat Stok Semasa</button>
+      <button class="btn" onclick="location.href='laporan-bayaran.html'">💰 Laporan Bayaran</button>
+      <button class="btn" onclick="location.href='grafik.html'">📈 Graf Penggunaan</button>
+      <button class="btn" onclick="location.href='sparepart.html'">📦 Tambah Sparepart</button>
+      <button class="btn" onclick="location.href='restock.html'">📥 Restock Sparepart</button>
+      <button class="btn" onclick="location.href='log-restock.html'">📦 Log Restock</button>
+      <button class="btn" onclick="location.href='senarai-user.html'">👥 Senarai Staff</button>
+      <button class="btn" onclick="location.href='tambah-user.html'">➕ Tambah Staff</button>
+      <button class="btn" onclick="location.href='reset-password.html'">🔑 Reset Kata Laluan Staff</button>
+      <button class="btn" onclick="location.href='guna.html'">🛠️ Guna Sparepart</button>
+      <button class="btn" onclick="location.href='permintaan.html'">📋 Permintaan Model Baru</button>
+      <button class="btn" onclick="location.href='senarai-permintaan.html'">📋 Senarai Permintaan</button>
+      <button class="btn" onclick="location.href='graf-permintaan.html'">📈 Graf Permintaan</button>
+    </div>
+
+    <!-- Staff Menu -->
+    <div id="staffMenu" style="display:none">
+      <button class="btn" onclick="location.href='guna.html'">🛠️ Guna Sparepart</button>
+      <button class="btn" onclick="location.href='stock.html'">📦 Lihat Stok Semasa</button>
+      <button class="btn" onclick="location.href='restock.html'">📥 Restock Sparepart</button>
+      <button class="btn" onclick="location.href='log-restock.html'">📦 Log Restock</button>
+      <button class="btn" onclick="location.href='permintaan.html'">📋 Permintaan Model Baru</button>
+      <button class="btn" onclick="location.href='tukar-katalaluan.html'">🔑 Tukar Kata Laluan</button>
+      <button class="btn" onclick="location.href='sparepart.html'">📦 Tambah Sparepart</button>
+    </div>
+
+    <button class="btn" id="logout" onclick="logout()">🚪 Log Keluar</button>
+  </div>
+
+  <script>
+    const role = localStorage.getItem("role");
+    const username = localStorage.getItem("username");
+    const user_id = localStorage.getItem("user_id");
+    const name = localStorage.getItem("name");
+
+    if (!role || !username || !user_id) {
+      alert("Sila login dahulu.");
+      window.location.href = "login.html";
+    }
+
+    document.getElementById("roleLabel").textContent = `(${role.toUpperCase()})`;
+    document.getElementById("welcomeText").textContent = name
+      ? `Selamat datang, ${name}!`
+      : `Selamat datang!`;
+
+    if (role === "admin") {
+      document.getElementById("adminMenu").style.display = "block";
+    } else if (role === "staff") {
+      document.getElementById("staffMenu").style.display = "block";
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Permintaan Sparepart Baru</title>
+  <style>
+    :root {
+      --primary: #05276A;
+      --bg: #f2f2f2;
+      --white: #fff;
+      --border: #ccc;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background: var(--white);
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background-color: #073a9a;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .topbar button {
+      background-color: #999;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      h2 {
+        font-size: 20px;
+      }
+
+      input, textarea, button {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sekat jika belum login -->
+  <script>
+    const role = localStorage.getItem("role");
+    if (!role) {
+      alert("❌ Anda belum login.");
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <div class="container">
+    <div class="topbar">
+      <h2>📝 Permintaan Sparepart Baru</h2>
+      <button onclick="window.location.href='dashboard.html'">⬅ Kembali</button>
+    </div>
+
+    <label for="model">Model yang diminta:</label>
+    <input type="text" id="model" placeholder="Contoh: LCD Poco M6 Pro" />
+
+    <label for="nota">Nota Tambahan (jika ada):</label>
+    <textarea id="nota" placeholder="Contoh: Customer tanya 3 kali minggu ni..."></textarea>
+
+    <button onclick="hantar()">✔ Hantar Permintaan</button>
+  </div>
+
+  <script>
+    function hantar() {
+      const model = document.getElementById("model").value.trim();
+      const note = document.getElementById("nota").value.trim();
+      const user_id = localStorage.getItem("user_id");
+
+      if (!model) return alert("❗ Sila isi model.");
+
+      fetch('/permintaan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, note, user_id })
+      })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          alert("✅ Permintaan berjaya disimpan!");
+          document.getElementById("model").value = "";
+          document.getElementById("nota").value = "";
+        } else {
+          alert("❌ Gagal simpan permintaan.");
+        }
+      });
+    }
+  </script>
+</body>
+</html>

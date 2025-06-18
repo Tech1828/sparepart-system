@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Sistem Sparepart</title>
+
+  <!-- ✅ Support Add to Home Screen (PWA-style) -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="HIA Sparepart">
+  <link rel="apple-touch-icon" href="logo.png">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background: #05276A;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 90%;
+      box-sizing: border-box;
+      text-align: center;
+      color: white;
+    }
+
+    .logo {
+      max-width: 100px;
+      margin: 0 auto 10px;
+    }
+
+    h2 {
+      margin-bottom: 5px;
+    }
+
+    .welcome {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    input::placeholder {
+      color: #aaa;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: white;
+      color: #05276A;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    #msg {
+      color: #ffdddd;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <img src="logo.png" alt="Logo Kedai" class="logo" />
+    <h2>Login</h2>
+    <p class="welcome">Welcome to HIA SPAREPART SYSTEM</p>
+
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Kata Laluan" />
+
+    <button onclick="login()">Login</button>
+
+    <p id="msg"></p>
+  </div>
+
+  <script>
+    async function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("msg");
+
+      if (!username || !password) {
+        msg.textContent = "Sila isi semua maklumat.";
+        return;
+      }
+
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        // Simpan maklumat login
+        localStorage.setItem("role", result.role);
+        localStorage.setItem("username", result.username);
+        localStorage.setItem("user_id", result.user_id);
+        localStorage.setItem("name", result.name); // Pastikan backend return 'name'
+
+        window.location.href = "dashboard.html";
+      } else {
+        msg.textContent = "❌ Login gagal. Sila semak maklumat anda.";
+      }
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restock Sparepart</title>
+  <style>
+    :root {
+      --primary: #05276A;
+      --bg: #f4f4f4;
+      --white: #fff;
+      --border: #ccc;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--white);
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: var(--primary);
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn {
+      background: #999;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn:hover {
+      background: #777;
+    }
+
+    label {
+      font-weight: bold;
+      color: var(--primary);
+      display: block;
+      margin-top: 15px;
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      font-size: 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    #submitBtn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    #submitBtn:hover {
+      background-color: #07338b;
+    }
+
+    #msg {
+      margin-top: 15px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .success { color: green; }
+    .error { color: red; }
+
+    .back-btn {
+      margin-top: 20px;
+      background-color: #ccc;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔐 Sekat akses jika belum login -->
+  <script>
+    const role = localStorage.getItem("role");
+    if (!role) {
+      alert("❌ Anda belum login.");
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <div class="container">
+    <div class="topbar">
+      <h2>📥 Restock Sparepart</h2>
+      <button class="btn" onclick="logout()">Log Keluar</button>
+    </div>
+
+    <label for="sparepart">Pilih Sparepart:</label>
+    <select id="sparepart"></select>
+
+    <label for="qty">Jumlah Tambah Stok:</label>
+    <input type="number" id="qty" min="1" placeholder="Contoh: 10" />
+
+    <button id="submitBtn" onclick="restock()">✔️ Restock Sekarang</button>
+
+    <div id="msg"></div>
+
+    <button class="btn back-btn" onclick="window.location.href='dashboard.html'">⬅️ Kembali</button>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    async function fetchSpareparts() {
+      const res = await fetch('/spareparts');
+      const data = await res.json();
+      const select = document.getElementById("sparepart");
+      select.innerHTML = "";
+      data.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = `${item.name} (Stok: ${item.in_stock})`;
+        select.appendChild(opt);
+      });
+    }
+
+    async function restock() {
+      const id = document.getElementById("sparepart").value;
+      const qty = parseInt(document.getElementById("qty").value);
+      const msg = document.getElementById("msg");
+      const user_id = localStorage.getItem("user_id");
+
+      if (!id || !qty || qty <= 0 || !user_id) {
+        msg.textContent = "❗ Sila pilih sparepart, jumlah dan pastikan anda login.";
+        msg.className = "error";
+        return;
+      }
+
+      const res = await fetch('/restock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, qty, user_id })
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        msg.textContent = "✅ Stok berjaya ditambah!";
+        msg.className = "success";
+        document.getElementById("qty").value = "";
+        fetchSpareparts(); // Refresh senarai stok
+      } else {
+        msg.textContent = "❌ Gagal tambah stok.";
+        msg.className = "error";
+      }
+    }
+
+    fetchSpareparts();
+  </script>
+</body>
+</html>

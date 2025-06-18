@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graf Permintaan Model</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #05276A;
+      --bg: #f2f2f2;
+      --white: #fff;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background: var(--white);
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 800px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--primary);
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+
+    canvas {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 100% !important;
+      max-width: 100%;
+      height: 350px !important;
+      box-sizing: border-box;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      background-color: #999;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #777;
+    }
+
+    @media (max-width: 600px) {
+      h2 {
+        font-size: 18px;
+      }
+
+      .btn {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="topbar">
+      <h2>📊 Graf Permintaan Model Sparepart</h2>
+      <button class="btn" onclick="window.location.href='dashboard.html'">⬅ Kembali</button>
+    </div>
+
+    <canvas id="grafModel"></canvas>
+  </div>
+
+  <script>
+    async function fetchGrafPermintaan() {
+      const res = await fetch('/graf-permintaan');
+      const data = await res.json();
+
+      const model = data.map(d => d.model);
+      const jumlah = data.map(d => d.jumlah);
+
+      const ctx = document.getElementById("grafModel").getContext("2d");
+
+      // Padam graf lama jika wujud
+      if (window.myChart) {
+        window.myChart.destroy();
+      }
+
+      window.myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: model,
+          datasets: [{
+            label: 'Jumlah Permintaan',
+            data: jumlah,
+            backgroundColor: '#05276A'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: true,
+              text: 'Top 10 Model Diminta Oleh Customer',
+              font: { size: 16 }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    }
+
+    fetchGrafPermintaan();
+  </script>
+</body>
+</html>

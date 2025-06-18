@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rekod Penggunaan Sparepart</title>
+  <style>
+    :root {
+      --primary: #05276A;
+      --bg: #f2f2f2;
+      --white: #fff;
+      --border: #ccc;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background: var(--white);
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #073a9a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+      font-size: 15px;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .topbar h2 {
+      margin: 0;
+    }
+
+    .topbar button {
+      background-color: #999;
+      font-size: 14px;
+      margin-left: 5px;
+    }
+
+    @media (max-width: 600px) {
+      h2 {
+        font-size: 18px;
+      }
+
+      input, select, button {
+        font-size: 15px;
+      }
+
+      table {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sekat jika belum login -->
+  <script>
+    const role = localStorage.getItem("role");
+    if (!role) {
+      alert("❌ Anda belum login.");
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <div class="container">
+    <div class="topbar">
+      <h2>🛠️ Guna Sparepart</h2>
+      <div>
+        <button onclick="window.location.href='dashboard.html'">⬅ Kembali</button>
+        <button onclick="logout()">Log Keluar</button>
+      </div>
+    </div>
+
+    <label>Nama Sparepart:</label>
+    <input type="text" id="sparepart" list="sparepartList" placeholder="Taip nama sparepart..." />
+    <datalist id="sparepartList"></datalist>
+
+    <label>Harga (Auto):</label>
+    <input type="text" id="harga" disabled />
+
+    <label>Stok Semasa:</label>
+    <input type="text" id="stok" disabled />
+
+    <label>Tujuan Penggunaan:</label>
+    <select id="tujuan">
+      <option value="guna">Guna</option>
+      <option value="exchange">Exchange</option>
+      <option value="claim">Claim</option>
+    </select>
+
+    <label>Nombor Resit:</label>
+    <input type="text" id="resit" placeholder="Contoh: R123" />
+
+    <label>Tarikh:</label>
+    <input type="date" id="tarikh" />
+
+    <button onclick="submitGuna()">✔️ Simpan Penggunaan</button>
+
+    <h3>📋 Senarai Penggunaan Terkini</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Tarikh</th>
+          <th>Sparepart</th>
+          <th>Harga</th>
+          <th>No Resit</th>
+          <th>Tujuan</th>
+        </tr>
+      </thead>
+      <tbody id="senarai"></tbody>
+    </table>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      let sparepartsMap = {};
+      const sparepartInput = document.getElementById("sparepart");
+      const hargaInput = document.getElementById("harga");
+      const stokInput = document.getElementById("stok");
+
+      document.getElementById("tarikh").value = new Date().toISOString().split("T")[0];
+
+      async function fetchSpareparts() {
+        const res = await fetch('/spareparts');
+        const data = await res.json();
+        const list = document.getElementById("sparepartList");
+        list.innerHTML = "";
+        sparepartsMap = {};
+        data.forEach(item => {
+          sparepartsMap[item.name] = {
+            id: item.id,
+            price: item.price,
+            stock: item.in_stock
+          };
+          const option = document.createElement("option");
+          option.value = item.name;
+          list.appendChild(option);
+        });
+      }
+
+      sparepartInput.addEventListener("input", () => {
+        const selected = sparepartsMap[sparepartInput.value];
+        hargaInput.value = selected ? selected.price : "";
+        stokInput.value = selected ? selected.stock : "";
+      });
+
+      async function submitGuna() {
+        const nama = sparepartInput.value;
+        const sparepart = sparepartsMap[nama];
+        const resit = document.getElementById("resit").value.trim();
+        const tarikh = document.getElementById("tarikh").value;
+        const tujuan = document.getElementById("tujuan").value;
+
+        if (!sparepart || !resit || !tujuan) return alert("❗ Sila isi semua maklumat.");
+
+        const response = await fetch('/penggunaan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sparepart_id: sparepart.id,
+            no_resit: resit,
+            tarikh,
+            tujuan
+          })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert("✅ Rekod penggunaan berjaya disimpan.");
+          document.getElementById("sparepart").value = "";
+          hargaInput.value = "";
+          stokInput.value = "";
+          document.getElementById("resit").value = "";
+          document.getElementById("tujuan").value = "guna";
+          sparepartInput.focus();
+          await fetchSpareparts();
+          fetchSenarai();
+        } else {
+          alert(result.message || "❌ Gagal simpan rekod.");
+        }
+      }
+
+      async function fetchSenarai() {
+        const res = await fetch('/penggunaan');
+        const data = await res.json();
+        const tbody = document.getElementById("senarai");
+        tbody.innerHTML = "";
+        data.forEach(row => {
+          tbody.innerHTML += `<tr>
+            <td>${row.used_date}</td>
+            <td>${row.name}</td>
+            <td>RM${row.price}</td>
+            <td>${row.receipt_no}</td>
+            <td>${row.tujuan || '-'}</td>
+          </tr>`;
+        });
+      }
+
+      window.submitGuna = submitGuna;
+      fetchSpareparts();
+      fetchSenarai();
+    });
+  </script>
+</body>
+</html>

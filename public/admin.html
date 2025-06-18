@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Panel - Semakan Penggunaan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary: #05276A;
+      --light-bg: #f2f2f2;
+      --white: #fff;
+      --danger: #e74c3c;
+      --border: #ccc;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--light-bg);
+      margin: 0;
+      padding: 15px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: var(--white);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .topbar h2 {
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .btn {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .btn-secondary {
+      background: #aaa;
+      color: var(--white);
+    }
+
+    .filter, .export {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .filter div, .export div {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 14px;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"], input[type="date"], select {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--primary);
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    const role = localStorage.getItem("role");
+    if (!role || role !== "admin") {
+      alert("❌ Akses hanya untuk admin.");
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <div class="container">
+    <div class="topbar">
+      <h2>📊 Panel Admin - Semakan Penggunaan</h2>
+      <button class="btn btn-secondary" onclick="goBack()">⬅️ Kembali</button>
+    </div>
+
+    <div class="filter">
+      <div>
+        <label>🔍 Nama Sparepart:</label>
+        <input type="text" id="cari" placeholder="Contoh: LCD iPhone" />
+      </div>
+      <div>
+        <label>📆 Dari:</label>
+        <input type="date" id="from" />
+      </div>
+      <div>
+        <label>📆 Hingga:</label>
+        <input type="date" id="to" />
+      </div>
+      <div>
+        <label>🧾 No Resit:</label>
+        <input type="text" id="resit" placeholder="Contoh: R123" />
+      </div>
+    </div>
+
+    <div class="export">
+      <div>
+        <label>📤 Export Dari:</label>
+        <input type="date" id="csvFrom" />
+      </div>
+      <div>
+        <label>📤 Hingga:</label>
+        <input type="date" id="csvTo" />
+      </div>
+      <div style="align-self: flex-end;">
+        <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tarikh</th>
+          <th>Nama</th>
+          <th>Harga</th>
+          <th>No Resit</th>
+          <th>Tujuan</th>
+          <th>Bayar</th>
+          <th>Restock</th>
+          <th>Kemaskini</th>
+          <th>Tindakan</th>
+        </tr>
+      </thead>
+      <tbody id="senarai"></tbody>
+    </table>
+  </div>
+
+  <script>
+    function goBack() {
+      window.location.href = "dashboard.html";
+    }
+
+    async function fetchRekod() {
+      const nama = document.getElementById("cari").value;
+      const from = document.getElementById("from").value;
+      const to = document.getElementById("to").value;
+      const resit = document.getElementById("resit").value;
+
+      let url = `/penggunaan-penuh?nama=${encodeURIComponent(nama)}&from=${from}&to=${to}&resit=${encodeURIComponent(resit)}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+      renderTable(data);
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById("senarai");
+      tbody.innerHTML = "";
+
+      data.forEach(row => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${row.used_date}</td>
+            <td>${row.name}</td>
+            <td>RM${row.price}</td>
+            <td>${row.receipt_no}</td>
+            <td>${row.tujuan || '-'}</td>
+            <td>
+              <select id="bayar-${row.id}">
+                <option value="belum bayar" ${row.payment_status === 'belum bayar' ? 'selected' : ''}>Belum</option>
+                <option value="sudah bayar" ${row.payment_status === 'sudah bayar' ? 'selected' : ''}>Sudah</option>
+              </select>
+            </td>
+            <td>
+              <select id="restock-${row.id}">
+                <option value="belum restock" ${row.restock_status === 'belum restock' ? 'selected' : ''}>Belum</option>
+                <option value="sudah restock" ${row.restock_status === 'sudah restock' ? 'selected' : ''}>Sudah</option>
+              </select>
+            </td>
+            <td>
+              <select id="update-${row.id}">
+                <option value="belum update" ${row.update_status === 'belum update' ? 'selected' : ''}>Belum</option>
+                <option value="sudah update" ${row.update_status === 'sudah update' ? 'selected' : ''}>Sudah</option>
+              </select>
+            </td>
+            <td><button onclick="kemaskini(${row.id})">Simpan</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    async function kemaskini(id) {
+      const payment = document.getElementById(`bayar-${id}`).value;
+      const restock = document.getElementById(`restock-${id}`).value;
+      const update = document.getElementById(`update-${id}`).value;
+
+      const res = await fetch('/kemaskini-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, payment, restock, update })
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        alert("✅ Status berjaya dikemaskini!");
+        fetchRekod();
+      } else {
+        alert("❌ Gagal kemaskini status.");
+      }
+    }
+
+    async function exportCSV() {
+      const from = document.getElementById("csvFrom").value;
+      const to = document.getElementById("csvTo").value;
+
+      let url = "/penggunaan-penuh";
+      const params = [];
+
+      if (from) params.push(`from=${from}`);
+      if (to) params.push(`to=${to}`);
+      if (params.length > 0) url += "?" + params.join("&");
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.length) return alert("Tiada data untuk dieksport.");
+
+      let csv = "Tarikh,Nama,No Resit,Harga,Tujuan,Bayar,Restock,Update\n";
+
+      data.forEach(row => {
+        const baris = [
+          row.used_date,
+          row.name,
+          row.receipt_no,
+          `RM${row.price}`,
+          row.tujuan || "-",
+          row.payment_status,
+          row.restock_status,
+          row.update_status
+        ];
+        csv += baris.join(",") + "\n";
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `penggunaan_${from || 'semua'}_${to || 'semua'}.csv`;
+      link.click();
+    }
+
+    document.getElementById("cari").addEventListener("input", fetchRekod);
+    document.getElementById("from").addEventListener("change", fetchRekod);
+    document.getElementById("to").addEventListener("change", fetchRekod);
+    document.getElementById("resit").addEventListener("input", fetchRekod);
+
+    fetchRekod();
+  </script>
+</body>
+</html>

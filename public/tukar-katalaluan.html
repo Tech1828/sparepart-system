@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tukar Kata Laluan</title>
+  <style>
+    body { font-family: Arial; max-width: 500px; margin: auto; padding: 30px; background: #f9f9f9; }
+    input, button { width: 100%; padding: 10px; margin: 10px 0; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>🔐 Tukar Kata Laluan Staff</h2>
+
+  <label>Username</label>
+  <input type="text" id="username" />
+
+  <label>Kata Laluan Lama</label>
+  <input type="password" id="oldPassword" />
+
+  <label>Kata Laluan Baru</label>
+  <input type="password" id="newPassword" />
+
+  <button onclick="tukarPassword()">Tukar Kata Laluan</button>
+
+  <script>
+    async function tukarPassword() {
+      const username = document.getElementById("username").value.trim();
+      const oldPassword = document.getElementById("oldPassword").value.trim();
+      const newPassword = document.getElementById("newPassword").value.trim();
+
+      if (!username || !oldPassword || !newPassword) {
+        return alert("Sila isi semua maklumat.");
+      }
+
+      const res = await fetch('/tukar-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, oldPassword, newPassword })
+      });
+
+      const result = await res.json();
+      alert(result.message);
+      if (result.success) {
+        window.location.href = "login.html";
+      }
+    }
+  </script>
+</body>
+</html>

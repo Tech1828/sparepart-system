@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambah User Staff</title>
+  <style>
+    :root {
+      --primary: #05276A;
+      --bg: #f9f9f9;
+      --white: #fff;
+      --border: #ccc;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      padding: 30px 20px;
+    }
+
+    .container {
+      background: var(--white);
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.06);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--primary);
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      font-size: 15px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      padding: 12px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      margin-top: 20px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #0741af;
+    }
+
+    .btn-secondary {
+      background-color: #999;
+      margin-top: 10px;
+    }
+
+    #msg {
+      font-weight: bold;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h2 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sekat akses bukan admin -->
+  <script>
+    const role = localStorage.getItem("role");
+    if (!role || role !== "admin") {
+      alert("❌ Akses hanya untuk admin.");
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <div class="container">
+    <div class="topbar">
+      <h2>➕ Tambah Staff Baru</h2>
+      <button class="btn-secondary" onclick="logout()">Log Keluar</button>
+    </div>
+
+    <label>Nama Penuh:</label>
+    <input type="text" id="name" placeholder="Contoh: Ali Bin Abu" />
+
+    <label>Username:</label>
+    <input type="text" id="username" placeholder="Contoh: ali123" />
+
+    <label>Password:</label>
+    <input type="text" id="password" placeholder="Contoh: rahsia123" />
+
+    <label>Jawatan:</label>
+    <select id="position">
+      <option value="tech">Technician</option>
+      <option value="sales">Salesgirl</option>
+    </select>
+
+    <button onclick="tambahUser()">✔ Tambah User</button>
+    <p id="msg"></p>
+
+    <button class="btn-secondary" onclick="window.location.href='dashboard.html'">⬅ Kembali ke Dashboard</button>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    async function tambahUser() {
+      const name = document.getElementById("name").value.trim();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const position = document.getElementById("position").value;
+      const msg = document.getElementById("msg");
+
+      if (!name || !username || !password) {
+        msg.textContent = "❗ Sila isi semua maklumat.";
+        msg.style.color = "red";
+        return;
+      }
+
+      const res = await fetch('/tambah-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, username, password, position })
+      });
+
+      const result = await res.json();
+      msg.textContent = result.message;
+      msg.style.color = result.success ? "green" : "red";
+
+      if (result.success) {
+        document.getElementById("name").value = "";
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("position").value = "tech";
+      }
+    }
+  </script>
+</body>
+</html>

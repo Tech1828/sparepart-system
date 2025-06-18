@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sejarah Restock</title>
+  <style>
+    :root {
+      --primary: #05276A;
+      --bg: #f2f2f2;
+      --white: #fff;
+      --border: #ccc;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--white);
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 1000px;
+      width: 95%;
+      box-sizing: border-box;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+      margin: 30px auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .btn {
+      background-color: #999;
+      color: white;
+      padding: 8px 14px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #777;
+    }
+
+    .filter {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .filter input {
+      padding: 10px;
+      font-size: 15px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      flex: 1;
+    }
+
+    .filter button {
+      padding: 10px 16px;
+      font-size: 15px;
+      border-radius: 6px;
+      border: none;
+      background-color: var(--primary);
+      color: white;
+      cursor: pointer;
+    }
+
+    .filter button:hover {
+      background-color: #07338b;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .filter input, .filter button {
+        flex: 1 1 100%;
+      }
+
+      th, td {
+        font-size: 14px;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    const role = localStorage.getItem("role");
+    if (!role) {
+      alert("❌ Anda belum login.");
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <div class="container">
+    <div class="topbar">
+      <h2>📦 Sejarah Restock Sparepart</h2>
+      <button class="btn" onclick="logout()">Log Keluar</button>
+    </div>
+
+    <div class="filter">
+      <input type="text" id="cari" placeholder="Cari nama sparepart..." />
+      <input type="date" id="from" />
+      <input type="date" id="to" />
+      <button onclick="loadLog()">🔍 Cari</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tarikh</th>
+          <th>Nama Sparepart</th>
+          <th>Kuantiti</th>
+          <th>Oleh</th>
+        </tr>
+      </thead>
+      <tbody id="senarai"></tbody>
+    </table>
+
+    <button class="btn" style="margin-top: 20px;" onclick="window.location.href='dashboard.html'">⬅️ Kembali ke Dashboard</button>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    async function loadLog() {
+      const cari = document.getElementById("cari").value.toLowerCase();
+      const from = document.getElementById("from").value;
+      const to = document.getElementById("to").value;
+
+      const res = await fetch('/log-restock');
+      const data = await res.json();
+
+      const tbody = document.getElementById("senarai");
+      tbody.innerHTML = "";
+
+      data
+        .filter(item => {
+          const matchNama = item.sparepart_name.toLowerCase().includes(cari);
+          const matchFrom = from ? item.restock_date >= from : true;
+          const matchTo = to ? item.restock_date <= to : true;
+          return matchNama && matchFrom && matchTo;
+        })
+        .forEach(item => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${item.restock_date}</td>
+              <td>${item.sparepart_name}</td>
+              <td>${item.qty}</td>
+              <td>${item.user_name}</td>
+            </tr>
+          `;
+        });
+    }
+
+    loadLog();
+  </script>
+</body>
+</html>

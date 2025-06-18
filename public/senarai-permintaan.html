@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Senarai Permintaan Sparepart</title>
+  <style>
+    :root {
+      --primary: #05276A;
+      --bg: #f2f2f2;
+      --white: #fff;
+      --border: #ddd;
+      --text: #333;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background: var(--white);
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 1000px;
+      width: 100%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    h2 {
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .btn {
+      background: #999;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn:hover {
+      background: #777;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 15px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: var(--primary);
+      color: white;
+      text-align: center;
+    }
+
+    td {
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        font-size: 14px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="topbar">
+      <h2>📋 Senarai Permintaan Sparepart</h2>
+      <button class="btn" onclick="window.location.href='dashboard.html'">⬅ Kembali</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Nota</th>
+          <th>Staff</th>
+          <th>Tarikh</th>
+        </tr>
+      </thead>
+      <tbody id="senaraiPermintaan"></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function fetchSenaraiPermintaan() {
+      const res = await fetch('/permintaan');
+      const data = await res.json();
+      const tbody = document.getElementById("senaraiPermintaan");
+      tbody.innerHTML = "";
+
+      data.forEach(row => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${row.model}</td>
+            <td>${row.note || '-'}</td>
+            <td>${row.user_name}</td>
+            <td>${row.created_at}</td>
+          </tr>
+        `;
+      });
+    }
+
+    fetchSenaraiPermintaan();
+  </script>
+
+</body>
+</html>
