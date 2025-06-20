@@ -165,6 +165,8 @@
       const msg = document.getElementById("msg");
       const user_id = localStorage.getItem("user_id");
 
+      console.log("user_id:", user_id);
+
       if (!id || !qty || qty <= 0 || !user_id) {
         msg.textContent = "❗ Sila pilih sparepart, jumlah dan pastikan anda login.";
         msg.className = "error";

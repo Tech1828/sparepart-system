@@ -11,7 +11,6 @@
       --bg: #f2f2f2;
       --white: #fff;
       --border: #ddd;
-      --text: #333;
     }
 
     body {
@@ -117,59 +116,55 @@
   </div>
 
   <script>
-    async function fetchGraf() {
+    let chart; // untuk simpan rujukan graf
+
+    async function loadGrafik() {
       const bulan = document.getElementById("bulan").value;
-      const url = bulan ? `/graf-penggunaan?bulan=${bulan}` : '/graf-penggunaan';
+      try {
+        const res = await fetch(`/grafik-penggunaan?bulan=${bulan}`);
+        const data = await res.json();
 
-      const res = await fetch(url);
-      const data = await res.json();
+        console.log("RESPON DATA DARI SERVER:", data);
 
-      const nama = data.map(d => d.name);
-      const jumlah = data.map(d => d.jumlah);
+        if (!Array.isArray(data)) {
+          alert("❌ Gagal mendapatkan data trafik.");
+          return;
+        }
 
-      const ctx = document.getElementById("grafSparepart").getContext("2d");
+        const labels = data.map(item => item.label);
+        const values = data.map(item => item.count);
 
-      if (window.myChart) {
-        window.myChart.destroy();
-      }
+        const ctx = document.getElementById('grafSparepart').getContext('2d');
 
-      window.myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: nama,
-          datasets: [{
-            label: 'Jumlah Penggunaan',
-            data: jumlah,
-            backgroundColor: '#05276A'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: {
-              display: true,
-              text: 'Sparepart Paling Banyak Digunakan',
-              font: { size: 18 }
-            }
+        if (chart) chart.destroy(); // kalau graf lama dah wujud, buang dulu
+
+        chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Kekerapan Penggunaan',
+              data: values,
+              backgroundColor: '#05276A'
+            }]
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1 }
+          options: {
+            responsive: true,
+            scales: {
+              y: { beginAtZero: true }
             }
           }
-        }
-      });
+        });
+      } catch (err) {
+        console.error("Ralat semasa ambil data graf:", err);
+        alert("❌ Gagal mendapatkan data trafik (catch).");
+      }
     }
 
-    document.getElementById("bulan").addEventListener("change", fetchGraf);
-
     document.addEventListener("DOMContentLoaded", () => {
-      const today = new Date();
-      const bulanNow = today.toISOString().slice(0, 7);
-      document.getElementById("bulan").value = bulanNow;
-      fetchGraf();
+      document.getElementById("bulan").value = new Date().toISOString().slice(0, 7);
+      document.getElementById("bulan").addEventListener("change", loadGrafik);
+      loadGrafik();
     });
   </script>
 </body>

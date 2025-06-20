@@ -9,7 +9,6 @@
       --primary: #05276A;
       --light-bg: #f2f2f2;
       --white: #fff;
-      --danger: #e74c3c;
       --border: #ccc;
     }
 
@@ -193,9 +192,14 @@
 
       let url = `/penggunaan-penuh?nama=${encodeURIComponent(nama)}&from=${from}&to=${to}&resit=${encodeURIComponent(resit)}`;
 
-      const res = await fetch(url);
-      const data = await res.json();
-      renderTable(data);
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        renderTable(data);
+      } catch (err) {
+        console.error(err);
+        alert("❌ Gagal mengambil data penggunaan.");
+      }
     }
 
     function renderTable(data) {
@@ -205,10 +209,10 @@
       data.forEach(row => {
         tbody.innerHTML += `
           <tr>
-            <td>${row.used_date}</td>
-            <td>${row.name}</td>
-            <td>RM${row.price}</td>
-            <td>${row.receipt_no}</td>
+            <td>${row.used_date || '-'}</td>
+            <td>${row.name || '-'}</td>
+            <td>RM${parseFloat(row.price).toFixed(2)}</td>
+            <td>${row.receipt_no || '-'}</td>
             <td>${row.tujuan || '-'}</td>
             <td>
               <select id="bayar-${row.id}">
@@ -239,18 +243,22 @@
       const restock = document.getElementById(`restock-${id}`).value;
       const update = document.getElementById(`update-${id}`).value;
 
-      const res = await fetch('/kemaskini-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, payment, restock, update })
-      });
-
-      const result = await res.json();
-      if (result.success) {
-        alert("✅ Status berjaya dikemaskini!");
-        fetchRekod();
-      } else {
-        alert("❌ Gagal kemaskini status.");
+      try {
+        const res = await fetch('/kemaskini-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, payment, restock, update })
+        });
+        const result = await res.json();
+        if (result.success) {
+          alert("✅ Status berjaya dikemaskini!");
+          fetchRekod();
+        } else {
+          alert("❌ Gagal kemaskini status.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Ralat ketika kemaskini.");
       }
     }
 
@@ -265,32 +273,37 @@
       if (to) params.push(`to=${to}`);
       if (params.length > 0) url += "?" + params.join("&");
 
-      const res = await fetch(url);
-      const data = await res.json();
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
 
-      if (!data.length) return alert("Tiada data untuk dieksport.");
+        if (!data.length) return alert("Tiada data untuk dieksport.");
 
-      let csv = "Tarikh,Nama,No Resit,Harga,Tujuan,Bayar,Restock,Update\n";
+        let csv = "Tarikh,Nama,No Resit,Harga,Tujuan,Bayar,Restock,Update\n";
 
-      data.forEach(row => {
-        const baris = [
-          row.used_date,
-          row.name,
-          row.receipt_no,
-          `RM${row.price}`,
-          row.tujuan || "-",
-          row.payment_status,
-          row.restock_status,
-          row.update_status
-        ];
-        csv += baris.join(",") + "\n";
-      });
+        data.forEach(row => {
+          const baris = [
+            row.used_date,
+            row.name || "-",
+            row.receipt_no,
+            `RM${parseFloat(row.price).toFixed(2)}`,
+            row.tujuan || "-",
+            row.payment_status,
+            row.restock_status,
+            row.update_status
+          ];
+          csv += baris.join(",") + "\n";
+        });
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `penggunaan_${from || 'semua'}_${to || 'semua'}.csv`;
-      link.click();
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `penggunaan_${from || 'semua'}_${to || 'semua'}.csv`;
+        link.click();
+      } catch (err) {
+        console.error(err);
+        alert("❌ Gagal eksport CSV.");
+      }
     }
 
     document.getElementById("cari").addEventListener("input", fetchRekod);

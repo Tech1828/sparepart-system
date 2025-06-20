@@ -118,27 +118,29 @@
     </table>
   </div>
 
-  <script>
-    async function fetchSenaraiPermintaan() {
-      const res = await fetch('/permintaan');
-      const data = await res.json();
-      const tbody = document.getElementById("senaraiPermintaan");
-      tbody.innerHTML = "";
+ <script>
+  async function fetchSenaraiPermintaan() {
+    const res = await fetch('/senarai-permintaan');
+    const data = await res.json();
+    const tbody = document.getElementById("senaraiPermintaan");
+    tbody.innerHTML = "";
 
-      data.forEach(row => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${row.model}</td>
-            <td>${row.note || '-'}</td>
-            <td>${row.user_name}</td>
-            <td>${row.created_at}</td>
-          </tr>
-        `;
-      });
-    }
+    data.forEach(row => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${row.model}</td>
+          <td>${row.note || '-'}</td>
+          <td>${row.user_name}</td>
+          <td>${row.request_date}</td>
+        </tr>
+      `;
+    });
+  }
 
-    fetchSenaraiPermintaan();
-  </script>
+  // ✅ Panggil fungsi selepas DOM dimuat
+  document.addEventListener("DOMContentLoaded", fetchSenaraiPermintaan);
+</script>
+
 
 </body>
 </html>

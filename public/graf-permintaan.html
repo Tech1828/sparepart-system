@@ -93,57 +93,48 @@
       <button class="btn" onclick="window.location.href='dashboard.html'">⬅ Kembali</button>
     </div>
 
-    <canvas id="grafModel"></canvas>
+    <canvas id="grafpermintaan"></canvas>
   </div>
 
   <script>
-    async function fetchGrafPermintaan() {
-      const res = await fetch('/graf-permintaan');
-      const data = await res.json();
+    async function loadGrafPermintaan() {
+      try {
+        const res = await fetch("/graf-permintaan");
+        const data = await res.json();
 
-      const model = data.map(d => d.model);
-      const jumlah = data.map(d => d.jumlah);
+        if (!Array.isArray(data)) {
+          console.error("Respon tidak sah:", data);
+          return alert("❌ Gagal dapatkan data graf.");
+        }
 
-      const ctx = document.getElementById("grafModel").getContext("2d");
+        const labels = data.map(item => item.label);
+        const values = data.map(item => item.count);
 
-      // Padam graf lama jika wujud
-      if (window.myChart) {
-        window.myChart.destroy();
-      }
-
-      window.myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: model,
-          datasets: [{
-            label: 'Jumlah Permintaan',
-            data: jumlah,
-            backgroundColor: '#05276A'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: {
-              display: true,
-              text: 'Top 10 Model Diminta Oleh Customer',
-              font: { size: 16 }
-            }
+        const ctx = document.getElementById('grafpermintaan').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Permintaan Model',
+              data: values,
+              backgroundColor: '#05276A'
+            }]
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 1
-              }
+          options: {
+            responsive: true,
+            scales: {
+              y: { beginAtZero: true }
             }
           }
-        }
-      });
+        });
+      } catch (err) {
+        console.error("Error muat grafik:", err);
+        alert("❌ Ralat semasa memuatkan graf.");
+      }
     }
 
-    fetchGrafPermintaan();
+    document.addEventListener("DOMContentLoaded", loadGrafPermintaan);
   </script>
 </body>
 </html>
